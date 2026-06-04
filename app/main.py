@@ -4,29 +4,29 @@ import sys
 def main():
     while 1: 
         sys.stdout.write("$ ")
-        user_input = input()
+        cmd = input()
 
-        type_list = ["exit", "echo", "type"];
+        builtin_commands = ["exit", "echo", "type"];
 
-        if user_input == "exit":
+        if cmd == "exit":
             break
-        elif user_input.startswith("echo"):
-            print(user_input[5:])
-        elif user_input.startswith("type"):
-            if user_input[5:] in type_list:
-                print(f'{user_input[5:]} is a shell builtin')
+        elif cmd.startswith("echo"):
+            print(cmd[5:])
+        elif cmd.startswith("type"):
+            if cmd[5:] in builtin_commands:
+                print(f'{cmd[5:]} is a shell builtin')
             else: 
-                print(f'{user_input[5:]}: not found')
+                print(f'{cmd[5:]}: not found')
         else:
-            print(f'{user_input}: command not found')
+            print(f'{cmd}: command not found')
 
-        # match user_input:
+        # match cmd:
         #     case "exit":
         #         break
         #     case s if s.startswith("echo"):
-        #         print(f'{user_input[5:]}')
+        #         print(f'{cmd[5:]}')
         #     case _:
-        #         print(f'{user_input}: command not found')
+        #         print(f'{cmd}: cmd not found')
 
         
     pass
