@@ -7,7 +7,7 @@ def main():
         user_input = input()
         if user_input == "exit":
             break
-        elif "echo" in user_input:
+        elif user_input.startswith("echo"):
             print(user_input[5:])
         else:
             print(f"{user_input}: command not found")
@@ -15,8 +15,8 @@ def main():
         # match user_input:
         #     case "exit":
         #         break
-        #     case "echo":
-        #         print(f"{user_input}")
+        #     case s if s.startswith("echo"):
+        #         print(f"{user_input[5:]}")
         #     case _:
         #         print(f"{user_input}: command not found")
 
