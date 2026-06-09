@@ -1,34 +1,26 @@
-import sys
-
+import sys, shutil
 
 def main():
     while 1: 
         sys.stdout.write("$ ")
-        cmd = input()
-
+        user_input = input()
+        cmd = user_input[5:]
+        file_path = shutil.which(cmd)
         builtin_commands = ["exit", "echo", "type"];
 
-        if cmd == "exit":
+        if user_input == "exit":
             break
-        elif cmd.startswith("echo"):
-            print(cmd[5:])
-        elif cmd.startswith("type"):
-            if cmd[5:] in builtin_commands:
-                print(f'{cmd[5:]} is a shell builtin')
+        elif user_input.startswith("echo"):
+            print(cmd)
+        elif user_input.startswith("type"):
+            if cmd in builtin_commands:
+                print(f'{cmd} is a shell builtin')
+            elif file_path:
+                print(f'{cmd} is {file_path}')
             else: 
-                print(f'{cmd[5:]}: not found')
-        else:
-            print(f'{cmd}: command not found')
-
-        # match cmd:
-        #     case "exit":
-        #         break
-        #     case s if s.startswith("echo"):
-        #         print(f'{cmd[5:]}')
-        #     case _:
-        #         print(f'{cmd}: cmd not found')
-
-        
+                print(f'{cmd}: not found')
+        else: 
+            print(f'{user_input}: command not found')
     pass
 
 if __name__ == "__main__":
