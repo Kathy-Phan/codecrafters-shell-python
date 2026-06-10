@@ -1,48 +1,54 @@
-import sys, shutil, subprocess, os
+import sys, shutil, subprocess, os, shlex
+
+builtin_commands = ["exit", "echo", "type", "pwd", "cd"];
 
 def main():
-    builtin_commands = ["exit", "echo", "type", "pwd", "cd"];
 
     while 1: 
         sys.stdout.write("$ ")
 
         user_input = input()
-        cmd = user_input[5:]
-        
+        tokens = shlex.split(user_input)
 
-        program_name = user_input.split()[0]
-        
-        if user_input == "exit":
-            break
-        elif user_input.startswith("echo"):
-            print(cmd)
-        elif user_input.startswith("type"):
-            file_path = shutil.which(cmd)
-            # if command is built-in
-            if cmd in builtin_commands:
-                print(f'{cmd} is a shell builtin')
-            elif file_path:
-                print(f'{cmd} is {file_path}')
-            else: 
-                print(f'{cmd}: not found')
-        elif user_input.startswith("pwd"):
-            print(os.getcwd())
-        elif user_input.startswith("cd"):
-            PATH = user_input.split()[1]
-            if PATH == '~':
-                home_env = os.environ['HOME']
-                os.chdir(home_env)
-            elif os.path.isdir(PATH):
-                os.chdir(PATH)
-            else: 
-                print(f'cd: {PATH}: No such file or directory')
-        elif shutil.which(program_name):
-            arguments = user_input.split()[1:]
-            res = subprocess.run([program_name] + arguments, capture_output=True, text=True)
-            print(res.stdout, end='')
-        else: 
-            print(f'{user_input}: command not found')
-    pass
+        if not tokens:
+            continue
+
+        program_name = tokens[0]
+        arguments = tokens[1:]
+
+        match program_name:
+            case "exit": exit(0)
+            case "echo": 
+                print(shlex.join(arguments).replace("'", ""))
+            case "type":
+                locate_executable_file(" ".join(arguments))
+            case "pwd": print(os.getcwd())
+            case "cd":
+                change_dir(" ".join(arguments))
+            case _ if shutil.which(program_name): 
+                res = subprocess.run([program_name] + arguments, capture_output=True, text=True)
+                print(res.stdout, end='')
+            case _ : print(f'{user_input}: command not found')
+    pass 
+
+def locate_executable_file(file):
+    is_executable = shutil.which(file)
+    if file in builtin_commands:
+        print(f'{file} is a shell builtin')
+    elif is_executable:
+        print(f'{file} is {is_executable}')
+    else:
+        print(f'{file}: not found')
+
+def change_dir(dir):
+    if dir == '~':
+        home_env = os.environ['HOME']
+        os.chdir(home_env)
+    elif os.path.isdir(dir):
+        os.chdir(dir)
+    else: 
+        print(f'cd: {dir}: No such file or directory')
+
 
 if __name__ == "__main__":
     main()
