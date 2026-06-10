@@ -1,7 +1,7 @@
-import sys, shutil, subprocess
+import sys, shutil, subprocess, os
 
 def main():
-    builtin_commands = ["exit", "echo", "type"];
+    builtin_commands = ["exit", "echo", "type", "pwd"];
 
     while 1: 
         sys.stdout.write("$ ")
@@ -9,7 +9,7 @@ def main():
         user_input = input()
         cmd = user_input[5:]
         file_path = shutil.which(cmd)
-        
+
         program_name = user_input.split()[0]
         arguments = user_input.split()[1:]
         
@@ -25,6 +25,8 @@ def main():
                 print(f'{cmd} is {file_path}')
             else: 
                 print(f'{cmd}: not found')
+        elif user_input.startswith("pwd"):
+            print(os.getcwd())
         elif shutil.which(program_name):
             res = subprocess.run([program_name] + arguments, capture_output=True, text=True)
             print(res.stdout, end='')
