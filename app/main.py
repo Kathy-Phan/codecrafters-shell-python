@@ -29,7 +29,10 @@ def main():
             print(os.getcwd())
         elif user_input.startswith("cd"):
             PATH = user_input.split()[1]
-            if os.path.isdir(PATH):
+            if PATH == '~':
+                home_env = os.environ['HOME']
+                os.chdir(home_env)
+            elif os.path.isdir(PATH):
                 os.chdir(PATH)
             else: 
                 print(f'cd: {PATH}: No such file or directory')
