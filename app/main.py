@@ -18,8 +18,7 @@ def main():
 
         match program_name:
             case "exit": exit(0)
-            case "echo": 
-                print(shlex.join(arguments).replace("'", ""))
+            case "echo": print(" ".join(arguments))
             case "type":
                 locate_executable_file(" ".join(arguments))
             case "pwd": print(os.getcwd())
