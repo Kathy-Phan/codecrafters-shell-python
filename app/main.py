@@ -15,7 +15,8 @@ def main():
 
         program_name = tokens[0]
         arguments = tokens[1:]
-            
+        
+        # redirect if > or 1> is in tokens
         if '>' in tokens or '1>' in tokens:
             symbol = '>' if '>' in tokens else '1>'
             redirect_symbol = tokens.index(symbol)
@@ -24,6 +25,7 @@ def main():
             redirect(result, tokens[redirect_symbol + 1])
             continue
        
+        # if file is not builtin and is executable 
         if program_name not in builtin_commands: 
             if shutil.which(program_name):
                 res = subprocess.run([program_name] + arguments, capture_output=True, text=True)
@@ -38,7 +40,14 @@ def main():
             case "exit": exit(0)
             case "echo": print(" ".join(arguments) )
             case "type":
-                locate_executable_file(" ".join(arguments) )
+                file = " ".join(arguments)
+                if file in builtin_commands:
+                    print(f'{file} is a shell builtin')
+                elif check_executable(file):
+                    print(f'{file} is {check_executable(file)}')
+                else:
+                    print(f'{file}: not found')
+                # locate_executable_file(" ".join(arguments))
             case "pwd": print(os.getcwd())
             case "cd":
                 change_dir(" ".join(arguments) )
@@ -50,14 +59,9 @@ def main():
 def print_command_not_found(user_input):
     print(f'{user_input}: command not found')
 
-def locate_executable_file(file):
+def check_executable(file):
     is_executable = shutil.which(file)
-    if file in builtin_commands:
-        print(f'{file} is a shell builtin')
-    elif is_executable:
-        print(f'{file} is {is_executable}')
-    else:
-        print(f'{file}: not found')
+    return is_executable
 
 def change_dir(dir):
     if dir == '~':
