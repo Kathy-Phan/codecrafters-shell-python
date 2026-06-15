@@ -25,9 +25,9 @@ def main():
             redirect(result, tokens[redirect_symbol + 1])
             continue
        
-        # if file is not builtin and is executable 
+        # if file is not builtin and is executable
         if program_name not in builtin_commands: 
-            if shutil.which(program_name):
+            if check_executable(program_name):
                 res = subprocess.run([program_name] + arguments, capture_output=True, text=True)
                 print(res.stdout, end='')
                 if res.stderr:
@@ -47,7 +47,6 @@ def main():
                     print(f'{file} is {check_executable(file)}')
                 else:
                     print(f'{file}: not found')
-                # locate_executable_file(" ".join(arguments))
             case "pwd": print(os.getcwd())
             case "cd":
                 change_dir(" ".join(arguments) )
