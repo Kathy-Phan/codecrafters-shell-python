@@ -15,16 +15,26 @@ def main():
 
         program_name = tokens[0]
         arguments = tokens[1:]
-        
-        # redirect if > or 1> is in tokens
-        if '>' in tokens or '1>' in tokens:
-            symbol = '>' if '>' in tokens else '1>'
+
+        ## Redirect stdout & stderr ##
+        if '>' in tokens or '1>' in tokens or '2>' in tokens:
+            if '>' in tokens:
+                symbol = '>'
+                redirect_stderr = False
+            elif '1>' in tokens:
+                symbol = '1>'
+                redirect_stderr = False
+            else:
+                symbol = '2>'
+                redirect_stderr = True
+            
             redirect_symbol = tokens.index(symbol)
-            cmd = tokens[:redirect_symbol]
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            redirect(result, tokens[redirect_symbol + 1])
+            context = tokens[:redirect_symbol]
+            file = tokens[redirect_symbol + 1]
+            
+            redirect(redirect_stderr, context, file)
             continue
-       
+        
         # if file is not builtin and is executable
         if program_name not in builtin_commands: 
             if check_executable(program_name):
@@ -38,7 +48,8 @@ def main():
 
         match program_name:
             case "exit": exit(0)
-            case "echo": print(" ".join(arguments) )
+            case "echo": 
+                print(" ".join(arguments))
             case "type":
                 file = " ".join(arguments)
                 if file in builtin_commands:
@@ -71,13 +82,19 @@ def change_dir(dir):
     else: 
         print(f'cd: {dir}: No such file or directory')
 
-def redirect(res, file):
-    os.makedirs(os.path.dirname(file), exist_ok=True)
-    with open(file, "w") as f:
-        f.write(res.stdout)
+def redirect(is_stderr, context, file):
+    try:
+        with open(file, 'w') as f:
+            subprocess.run(
+                context,
+                stdout=None if is_stderr else f,
+                stderr=f if is_stderr else None,
+                text=True
+            )
+    except FileNotFoundError:
+        print(f"{file}: No such file or directory in stdout", file=sys.stderr)
         
-    if res.stderr:
-        print(res.stderr, end='')
+    
 
 if __name__ == "__main__":
     main()
