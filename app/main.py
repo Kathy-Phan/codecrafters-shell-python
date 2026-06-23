@@ -19,7 +19,7 @@ def main():
         symbol = ''
 
         ## Redirect stdout & stderr to a file ##
-        if '>' in tokens or '1>' in tokens or '2>' in tokens or '>>' in tokens or '1>>' in tokens:
+        if '>' in tokens or '1>' in tokens or '2>' in tokens or '>>' in tokens or '1>>' in tokens or '2>>' in tokens:
             if '>' in tokens:
                 symbol = '>'
                 redirect_stderr = False
@@ -31,15 +31,20 @@ def main():
                 redirect_stderr = True
             elif '>>' in tokens:
                 symbol = '>>'
+                redirect_stderr = False
             elif '1>>' in tokens:
                 symbol = '1>>'
+                redirect_stderr = False
+            elif '2>>' in tokens:
+                symbol = '2>>'
+                redirect_stderr = True
         
             redirect_symbol = tokens.index(symbol)
             context = tokens[:redirect_symbol]
             file = tokens[redirect_symbol + 1]
 
-            if symbol == '>>' or symbol == '1>>': 
-                append(context, file)
+            if symbol == '>>' or symbol == '1>>' or symbol == '2>>': 
+                append(redirect_stderr, context, file)
             else:
                 redirect(redirect_stderr, context, file)
             continue
@@ -103,12 +108,13 @@ def redirect(is_stderr, context, file):
     except FileNotFoundError:
         print(f"{file}: No such file or directory in redirect stdout", file=sys.stderr)
         
-def append(context, file):
+def append(is_stderr, context, file):
     try:
         with open(file, 'a') as f:
             subprocess.run(
                 context,
-                stdout=f,
+                stdout=None if is_stderr else f,
+                stderr=f if is_stderr else None,
                 text=True
             )
     except FileNotFoundError:
