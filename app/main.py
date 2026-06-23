@@ -16,37 +16,25 @@ def main():
         program_name = tokens[0]
         arguments = tokens[1:]
 
-        symbol = ''
-
         ## Redirect stdout & stderr to a file ##
-        if '>' in tokens or '1>' in tokens or '2>' in tokens or '>>' in tokens or '1>>' in tokens or '2>>' in tokens:
-            if '>' in tokens:
-                symbol = '>'
-                redirect_stderr = False
-            elif '1>' in tokens:
-                symbol = '1>'
-                redirect_stderr = False
-            elif '2>' in tokens:
-                symbol = '2>'
-                redirect_stderr = True
-            elif '>>' in tokens:
-                symbol = '>>'
-                redirect_stderr = False
-            elif '1>>' in tokens:
-                symbol = '1>>'
-                redirect_stderr = False
-            elif '2>>' in tokens:
-                symbol = '2>>'
-                redirect_stderr = True
-        
+        redirect_operators = {
+            ">": ("w", False),
+            "1>": ("w", False),
+            "2>": ("w", True),
+            ">>": ("a", False),
+            "1>>": ("a", False),
+            "2>>": ("a", True)
+        }
+
+        symbol = next((op for op in tokens if op in redirect_operators), None)
+
+        if symbol:
             redirect_symbol = tokens.index(symbol)
             context = tokens[:redirect_symbol]
             file = tokens[redirect_symbol + 1]
 
-            if symbol == '>>' or symbol == '1>>' or symbol == '2>>': 
-                append(redirect_stderr, context, file)
-            else:
-                redirect(redirect_stderr, context, file)
+            mode, is_stderr = redirect_operators[symbol]
+            redirect_or_append(mode, is_stderr, context, file)
             continue
 
         # if file is not builtin and is executable
@@ -95,22 +83,10 @@ def change_dir(dir):
         os.chdir(dir)
     else: 
         print(f'cd: {dir}: No such file or directory')
-
-def redirect(is_stderr, context, file):
-    try:
-        with open(file, 'w') as f:
-            subprocess.run(
-                context,
-                stdout=None if is_stderr else f,
-                stderr=f if is_stderr else None,
-                text=True
-            )
-    except FileNotFoundError:
-        print(f"{file}: No such file or directory in redirect stdout", file=sys.stderr)
         
-def append(is_stderr, context, file):
+def redirect_or_append(mode, is_stderr, context, file):
     try:
-        with open(file, 'a') as f:
+        with open(file, mode) as f:
             subprocess.run(
                 context,
                 stdout=None if is_stderr else f,
