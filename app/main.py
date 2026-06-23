@@ -16,25 +16,34 @@ def main():
         program_name = tokens[0]
         arguments = tokens[1:]
 
-        ## Redirect stdout & stderr ##
-        if '>' in tokens or '1>' in tokens or '2>' in tokens:
+        symbol = ''
+
+        ## Redirect stdout & stderr to a file ##
+        if '>' in tokens or '1>' in tokens or '2>' in tokens or '>>' in tokens or '1>>' in tokens:
             if '>' in tokens:
                 symbol = '>'
                 redirect_stderr = False
             elif '1>' in tokens:
                 symbol = '1>'
                 redirect_stderr = False
-            else:
+            elif '2>' in tokens:
                 symbol = '2>'
                 redirect_stderr = True
-            
+            elif '>>' in tokens:
+                symbol = '>>'
+            elif '1>>' in tokens:
+                symbol = '1>>'
+        
             redirect_symbol = tokens.index(symbol)
             context = tokens[:redirect_symbol]
             file = tokens[redirect_symbol + 1]
-            
-            redirect(redirect_stderr, context, file)
+
+            if symbol == '>>' or symbol == '1>>': 
+                append(context, file)
+            else:
+                redirect(redirect_stderr, context, file)
             continue
-        
+
         # if file is not builtin and is executable
         if program_name not in builtin_commands: 
             if check_executable(program_name):
@@ -92,9 +101,19 @@ def redirect(is_stderr, context, file):
                 text=True
             )
     except FileNotFoundError:
-        print(f"{file}: No such file or directory in stdout", file=sys.stderr)
+        print(f"{file}: No such file or directory in redirect stdout", file=sys.stderr)
         
-    
+def append(context, file):
+    try:
+        with open(file, 'a') as f:
+            subprocess.run(
+                context,
+                stdout=f,
+                text=True
+            )
+    except FileNotFoundError:
+        print(f"{file}: No such file or directory in append stdout", file=sys.stderr)
+        
 
 if __name__ == "__main__":
     main()
